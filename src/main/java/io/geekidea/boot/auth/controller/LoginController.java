@@ -4,7 +4,6 @@ import io.geekidea.boot.auth.dto.LoginDto;
 import io.geekidea.boot.auth.service.LoginRedisService;
 import io.geekidea.boot.auth.service.LoginService;
 import io.geekidea.boot.auth.util.LoginUtil;
-import io.geekidea.boot.auth.util.TokenUtil;
 import io.geekidea.boot.auth.vo.LoginTokenVo;
 import io.geekidea.boot.auth.vo.LoginVo;
 import io.geekidea.boot.common.constant.LoginConstant;
@@ -13,6 +12,7 @@ import io.geekidea.boot.util.CookieUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -81,7 +81,7 @@ public class LoginController {
     public ApiResult<Boolean> logout(HttpServletRequest request, HttpServletResponse response) {
         // 删除缓存
         Long userId = LoginUtil.getUserId();
-        String userToken = LoginConstant.ADMIN_TOKEN_PREFIX + TokenUtil.getShortId(userId) + ".";
+        String userToken = LoginConstant.ADMIN_TOKEN_PREFIX + DigestUtils.md5Hex(userId.toString()) + ".";
         loginRedisService.deleteLoginInfoByToken(userToken);
         // 从cookie中删除token
         CookieUtil.deleteCookie(LoginConstant.ADMIN_COOKIE_TOKEN_NAME, request, response);
