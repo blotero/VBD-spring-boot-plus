@@ -1,5 +1,7 @@
 package io.geekidea.boot.auth.service.impl;
 
+import io.geekidea.boot.auth.cache.LoginCache;
+import io.geekidea.boot.auth.cache.TokenCache;
 import io.geekidea.boot.auth.dto.LoginDto;
 import io.geekidea.boot.auth.service.LoginRedisService;
 import io.geekidea.boot.auth.service.LoginService;
@@ -127,13 +129,12 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public void logout() {
-        try {
-            // 获取token
-            String token = TokenUtil.getToken();
-            // 删除缓存
-            loginRedisService.deleteLoginVo(token);
-        } catch (Exception e) {
-            e.printStackTrace();
+        LoginVo loginVo = LoginUtil.getLoginVo();
+        if (loginVo != null) {
+            log.info("管理后台退出：" + loginVo.getUsername());
         }
+        // 删除缓存
+        LoginCache.remove();
+        TokenCache.remove();
     }
 }
