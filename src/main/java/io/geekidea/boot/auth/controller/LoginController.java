@@ -1,7 +1,10 @@
 package io.geekidea.boot.auth.controller;
 
 import io.geekidea.boot.auth.dto.LoginDto;
+import io.geekidea.boot.auth.service.LoginRedisService;
 import io.geekidea.boot.auth.service.LoginService;
+import io.geekidea.boot.auth.util.LoginUtil;
+import io.geekidea.boot.auth.util.TokenUtil;
 import io.geekidea.boot.auth.vo.LoginTokenVo;
 import io.geekidea.boot.auth.vo.LoginVo;
 import io.geekidea.boot.common.constant.LoginConstant;
@@ -32,6 +35,9 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private LoginRedisService loginRedisService;
 
     /**
      * 管理后台登录
@@ -74,7 +80,9 @@ public class LoginController {
     @Operation(summary = "管理后台退出")
     public ApiResult<Boolean> logout(HttpServletRequest request, HttpServletResponse response) {
         // 删除缓存
-        loginService.logout();
+        Long userId = LoginUtil.getUserId();
+        String userToken = LoginConstant.ADMIN_TOKEN_PREFIX + TokenUtil.getShortId(userId) + ".";
+        loginRedisService.deleteLoginInfoByToken(userToken);
         // 从cookie中删除token
         CookieUtil.deleteCookie(LoginConstant.ADMIN_COOKIE_TOKEN_NAME, request, response);
         return ApiResult.success();
