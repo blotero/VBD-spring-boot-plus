@@ -180,6 +180,6 @@ public class AppLoginServiceImpl implements AppLoginService {
         String loginRedisKey = appLoginRedisService.getLoginRedisKey(token);
         log.info("APP用户退出：" + loginRedisKey);
         // 删除缓存
-        appLoginRedisService.deleteLoginVo(loginRedisKey);
+        appLoginRedisService.deleteLoginVo(token);
     }
 }
