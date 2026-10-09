@@ -177,7 +177,9 @@ public class AppLoginServiceImpl implements AppLoginService {
     public void logout() {
         // 获取token
         String token = TokenUtil.getToken();
+        String loginRedisKey = appLoginRedisService.getLoginRedisKey(token);
+        log.info("APP用户退出：" + loginRedisKey);
         // 删除缓存
-        appLoginRedisService.deleteLoginVo(token);
+        appLoginRedisService.deleteLoginVo(loginRedisKey);
     }
 }
