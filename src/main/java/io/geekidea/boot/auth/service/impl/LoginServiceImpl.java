@@ -134,6 +134,7 @@ public class LoginServiceImpl implements LoginService {
             log.info("管理后台退出：" + loginVo.getUsername());
         }
         // 删除缓存
+        loginRedisService.deleteLoginVo(TokenUtil.getToken());
         LoginCache.remove();
         TokenCache.remove();
     }
