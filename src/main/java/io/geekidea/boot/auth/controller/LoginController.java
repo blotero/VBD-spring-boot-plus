@@ -1,7 +1,9 @@
 package io.geekidea.boot.auth.controller;
 
 import io.geekidea.boot.auth.dto.LoginDto;
+import io.geekidea.boot.auth.event.LoginOfflineEvent;
 import io.geekidea.boot.auth.service.LoginService;
+import io.geekidea.boot.auth.util.LoginUtil;
 import io.geekidea.boot.auth.vo.LoginTokenVo;
 import io.geekidea.boot.auth.vo.LoginVo;
 import io.geekidea.boot.common.constant.LoginConstant;
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +35,9 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 管理后台登录
@@ -75,6 +81,22 @@ public class LoginController {
     public ApiResult<Boolean> logout(HttpServletRequest request, HttpServletResponse response) {
         // 删除缓存
         loginService.logout();
+        // 从cookie中删除token
+        CookieUtil.deleteCookie(LoginConstant.ADMIN_COOKIE_TOKEN_NAME, request, response);
+        return ApiResult.success();
+    }
+
+    /**
+     * 管理后台退出所有设备
+     *
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/logoutAll")
+    @Operation(summary = "管理后台退出所有设备")
+    public ApiResult<Boolean> logoutAll(HttpServletRequest request, HttpServletResponse response) {
+        Long userId = LoginUtil.getUserId();
+        applicationEventPublisher.publishEvent(new LoginOfflineEvent(userId));
         // 从cookie中删除token
         CookieUtil.deleteCookie(LoginConstant.ADMIN_COOKIE_TOKEN_NAME, request, response);
         return ApiResult.success();

@@ -1,16 +1,20 @@
 package io.geekidea.boot.auth.service.impl;
 
+import io.geekidea.boot.auth.event.LoginOfflineEvent;
 import io.geekidea.boot.auth.service.LoginRedisService;
 import io.geekidea.boot.auth.util.TokenUtil;
 import io.geekidea.boot.auth.vo.LoginVo;
+import io.geekidea.boot.common.constant.LoginConstant;
 import io.geekidea.boot.common.constant.RedisKey;
 import io.geekidea.boot.config.properties.LoginAdminProperties;
 import io.geekidea.boot.framework.exception.LoginException;
 import io.geekidea.boot.framework.exception.LoginTokenException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -108,6 +112,12 @@ public class LoginRedisServiceImpl implements LoginRedisService {
         if (CollectionUtils.isNotEmpty(keys)) {
             redisTemplate.delete(keys);
         }
+    }
+
+    @EventListener
+    public void handleLoginOfflineEvent(LoginOfflineEvent event) {
+        String userMd5 = DigestUtils.md5Hex(event.getUserId().toString());
+        deleteLoginInfoByToken(LoginConstant.ADMIN_TOKEN_PREFIX + userMd5 + ".");
     }
 
 }
